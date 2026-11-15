@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sipl"
+version = "0.1.0"
+description = "SIPL Language Toolkit: grammar, parser and typed AST for the SIPL teaching language"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["lark>=1.1"]
+
+[project.scripts]
+sipl = "sipl.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-cov>=4"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sipl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

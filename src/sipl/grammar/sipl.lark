@@ -1,0 +1,49 @@
+// SIPL: formal grammar (course BNF, with the course precedence rules).
+//
+// Priority, highest first:  *   |   + -   |   = >   |   ¬   |   ∨   |
+//                           :=  |   while |   if    |   ;
+// All binary operations are left-associative. The body of `while` and the
+// branches of `if` are single statements; `;` binds loosest, so
+// `while b do S1; S2` is `(while b do S1); S2`.
+// Parentheses are accepted but are not part of the AST.
+
+program: "begin" seq "end"
+
+seq: stmt (";" stmt)*
+
+?stmt: assign
+     | if_stmt
+     | while_stmt
+     | block
+     | skip
+
+assign: VAR ":=" aexp
+if_stmt: "if" cond "then" stmt "else" stmt
+while_stmt: "while" cond "do" stmt
+block: "begin" seq "end"
+skip: "skip"
+
+?cond: cond "∨" neg -> or_
+     | neg
+?neg: "¬" neg -> not_
+    | atom_cond
+?atom_cond: aexp CMP aexp -> compare
+          | "(" cond ")"
+
+?aexp: aexp ADD term -> binop
+     | term
+?term: term MUL factor -> binop
+     | factor
+?factor: NUMBER -> num
+       | VAR -> var
+       | "(" aexp ")"
+
+ADD: "+" | "-"
+MUL: "*"
+CMP: "=" | ">"
+
+// Keywords are excluded from identifiers; numbers may be negative literals.
+VAR: /(?!(begin|end|if|then|else|while|do|skip)\b)[A-Za-z_][A-Za-z_0-9]*/
+NUMBER: /-?[0-9]+/
+
+%ignore /[ \t\r\n]+/
