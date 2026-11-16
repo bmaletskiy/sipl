@@ -1,0 +1,288 @@
+{
+  "suite": "syntax_errors",
+  "description": "Programs that must be rejected, with the position of the first offending character or token.",
+  "cases": [
+    {
+      "name": "empty-source",
+      "description": "No program at all.",
+      "source": "",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError"
+        }
+      }
+    },
+    {
+      "name": "whitespace-only",
+      "description": "No program at all.",
+      "source": "  \n ",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError"
+        }
+      }
+    },
+    {
+      "name": "missing-begin",
+      "description": "A program starts with 'begin'.",
+      "source": "x := 1 end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 1
+        }
+      }
+    },
+    {
+      "name": "missing-end",
+      "description": "A program ends with 'end'.",
+      "source": "begin x := 1",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError"
+        }
+      }
+    },
+    {
+      "name": "leading-semicolon",
+      "description": "';' only separates statements.",
+      "source": "begin ; x := 1 end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 7
+        }
+      }
+    },
+    {
+      "name": "trailing-semicolon",
+      "description": "No ';' before 'end'.",
+      "source": "begin x := 1; end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 15
+        }
+      }
+    },
+    {
+      "name": "double-semicolon",
+      "description": "Two ';' in a row.",
+      "source": "begin x := 1;; y := 2 end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 14
+        }
+      }
+    },
+    {
+      "name": "empty-block",
+      "description": "A block needs a statement.",
+      "source": "begin begin end end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "if-without-else",
+      "description": "'else' is mandatory.",
+      "source": "begin if x > 0 then skip end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "if-without-then",
+      "description": "'then' is mandatory.",
+      "source": "begin if x > 0 skip else skip end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 16
+        }
+      }
+    },
+    {
+      "name": "then-takes-one-statement",
+      "description": "';' ends the then-branch, so 'else' is missing.",
+      "source": "begin if a > b then x := 1; y := 2 else skip end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 27
+        }
+      }
+    },
+    {
+      "name": "while-without-do",
+      "description": "'do' is mandatory.",
+      "source": "begin while x > 0 skip end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 19
+        }
+      }
+    },
+    {
+      "name": "assignment-without-expression",
+      "description": "Missing right-hand side.",
+      "source": "begin x := end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 12
+        }
+      }
+    },
+    {
+      "name": "keyword-as-variable",
+      "description": "Keywords are not variables.",
+      "source": "begin x := while end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 12
+        }
+      }
+    },
+    {
+      "name": "keyword-as-assignment-target",
+      "description": "Keywords are not variables.",
+      "source": "begin while := 1 end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "assignment-to-number",
+      "description": "The target must be a variable.",
+      "source": "begin 1 := x end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 7
+        }
+      }
+    },
+    {
+      "name": "equals-is-not-assignment",
+      "description": "'=' is a comparison, ':=' is assignment.",
+      "source": "begin x = 1 end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 9
+        }
+      }
+    },
+    {
+      "name": "condition-needs-comparison",
+      "description": "A condition is a comparison, not a number.",
+      "source": "begin while x do skip end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 15
+        }
+      }
+    },
+    {
+      "name": "unbalanced-parenthesis",
+      "description": "Missing ')'.",
+      "source": "begin x := (1 + 2 end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 19
+        }
+      }
+    },
+    {
+      "name": "unsupported-operator",
+      "description": "There is no division operator.",
+      "source": "begin x := a / b end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 14
+        }
+      }
+    },
+    {
+      "name": "unknown-character",
+      "description": "Character outside the alphabet.",
+      "source": "begin x := 1 # end",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 14
+        }
+      }
+    },
+    {
+      "name": "text-after-program",
+      "description": "Nothing may follow the final 'end'.",
+      "source": "begin skip end skip",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 16
+        }
+      }
+    },
+    {
+      "name": "keywords-are-case-sensitive",
+      "description": "'BEGIN' is a variable, not a keyword.",
+      "source": "BEGIN skip END",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 1,
+          "column": 1
+        }
+      }
+    },
+    {
+      "name": "position-on-a-later-line",
+      "description": "Lines are counted from 1.",
+      "source": "begin\n  x := 1;\n  y := ;\nend",
+      "expect": {
+        "error": {
+          "type": "SiplSyntaxError",
+          "line": 3,
+          "column": 8
+        }
+      }
+    }
+  ]
+}

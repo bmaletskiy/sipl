@@ -1,0 +1,286 @@
+{
+  "suite": "ast",
+  "description": "Abstract syntax: what a program means structurally. See README for the notation.",
+  "cases": [
+    {
+      "name": "skip-program",
+      "description": "The smallest program.",
+      "source": "begin skip end",
+      "expect": {
+        "ast": "(Program (Skip))"
+      }
+    },
+    {
+      "name": "assign-number",
+      "description": "Assignment of a number.",
+      "source": "begin x := 1 end",
+      "expect": {
+        "ast": "(Program (Assign x 1))"
+      }
+    },
+    {
+      "name": "negative-literal",
+      "description": "Negative numbers are literals.",
+      "source": "begin x := -1 end",
+      "expect": {
+        "ast": "(Program (Assign x -1))"
+      }
+    },
+    {
+      "name": "subtraction-not-literal",
+      "description": "After an operand, '-' is subtraction.",
+      "source": "begin x := y - 1 end",
+      "expect": {
+        "ast": "(Program (Assign x (- y 1)))"
+      }
+    },
+    {
+      "name": "subtraction-without-space",
+      "description": "'y -1' is still a subtraction.",
+      "source": "begin x := y -1 end",
+      "expect": {
+        "ast": "(Program (Assign x (- y 1)))"
+      }
+    },
+    {
+      "name": "subtract-negative-literal",
+      "description": "Subtraction of a negative literal.",
+      "source": "begin x := y - -1 end",
+      "expect": {
+        "ast": "(Program (Assign x (- y -1)))"
+      }
+    },
+    {
+      "name": "mul-before-add-right",
+      "description": "* binds tighter than +.",
+      "source": "begin x := a + b * c end",
+      "expect": {
+        "ast": "(Program (Assign x (+ a (* b c))))"
+      }
+    },
+    {
+      "name": "mul-before-add-left",
+      "description": "* binds tighter than +.",
+      "source": "begin x := a * b + c end",
+      "expect": {
+        "ast": "(Program (Assign x (+ (* a b) c)))"
+      }
+    },
+    {
+      "name": "subtraction-left-assoc",
+      "description": "Binary operations are left-associative.",
+      "source": "begin x := a - b - c end",
+      "expect": {
+        "ast": "(Program (Assign x (- (- a b) c)))"
+      }
+    },
+    {
+      "name": "add-sub-left-assoc",
+      "description": "+ and - have the same priority.",
+      "source": "begin x := a - b + c end",
+      "expect": {
+        "ast": "(Program (Assign x (+ (- a b) c)))"
+      }
+    },
+    {
+      "name": "multiplication-left-assoc",
+      "description": "Left-associative *.",
+      "source": "begin x := a * b * c end",
+      "expect": {
+        "ast": "(Program (Assign x (* (* a b) c)))"
+      }
+    },
+    {
+      "name": "parentheses-override-priority",
+      "description": "Parentheses are not nodes.",
+      "source": "begin x := (a + b) * c end",
+      "expect": {
+        "ast": "(Program (Assign x (* (+ a b) c)))"
+      }
+    },
+    {
+      "name": "redundant-parentheses",
+      "description": "Redundant parentheses disappear.",
+      "source": "begin x := ((a)) end",
+      "expect": {
+        "ast": "(Program (Assign x a))"
+      }
+    },
+    {
+      "name": "complex-expression",
+      "description": "Nested arithmetic.",
+      "source": "begin x := (a + b) * (c - d) - 1 end",
+      "expect": {
+        "ast": "(Program (Assign x (- (* (+ a b) (- c d)) 1)))"
+      }
+    },
+    {
+      "name": "comparison-equals",
+      "description": "Condition '='.",
+      "source": "begin if a = b then skip else skip end",
+      "expect": {
+        "ast": "(Program (If (= a b) (Skip) (Skip)))"
+      }
+    },
+    {
+      "name": "comparison-greater",
+      "description": "Condition '>'.",
+      "source": "begin while a > b do skip end",
+      "expect": {
+        "ast": "(Program (While (> a b) (Skip)))"
+      }
+    },
+    {
+      "name": "arithmetic-in-comparison",
+      "description": "Arithmetic binds tighter than comparison.",
+      "source": "begin while a + 1 > b * 2 do skip end",
+      "expect": {
+        "ast": "(Program (While (> (+ a 1) (* b 2)) (Skip)))"
+      }
+    },
+    {
+      "name": "negation-below-comparison",
+      "description": "'¬' applies to the whole comparison.",
+      "source": "begin while ¬ a = b do skip end",
+      "expect": {
+        "ast": "(Program (While (not (= a b)) (Skip)))"
+      }
+    },
+    {
+      "name": "negation-above-or",
+      "description": "'¬' binds tighter than '∨'.",
+      "source": "begin while ¬ a = b ∨ c > d do skip end",
+      "expect": {
+        "ast": "(Program (While (or (not (= a b)) (> c d)) (Skip)))"
+      }
+    },
+    {
+      "name": "or-left-assoc",
+      "description": "'∨' is left-associative.",
+      "source": "begin while a = b ∨ c = d ∨ e = f do skip end",
+      "expect": {
+        "ast": "(Program (While (or (or (= a b) (= c d)) (= e f)) (Skip)))"
+      }
+    },
+    {
+      "name": "double-negation",
+      "description": "Repeated '¬'.",
+      "source": "begin while ¬¬a = b do skip end",
+      "expect": {
+        "ast": "(Program (While (not (not (= a b))) (Skip)))"
+      }
+    },
+    {
+      "name": "parenthesized-conditions",
+      "description": "Parentheses around conditions.",
+      "source": "begin while (a > b) ∨ (c = d) do skip end",
+      "expect": {
+        "ast": "(Program (While (or (> a b) (= c d)) (Skip)))"
+      }
+    },
+    {
+      "name": "negated-parenthesized-or",
+      "description": "'¬' applied to a parenthesized disjunction.",
+      "source": "begin while ¬(a = b ∨ c = d) do skip end",
+      "expect": {
+        "ast": "(Program (While (not (or (= a b) (= c d))) (Skip)))"
+      }
+    },
+    {
+      "name": "arithmetic-parentheses-in-condition",
+      "description": "A parenthesis may start an arithmetic operand of a comparison.",
+      "source": "begin while (a + b) > c do skip end",
+      "expect": {
+        "ast": "(Program (While (> (+ a b) c) (Skip)))"
+      }
+    },
+    {
+      "name": "sequence-left-assoc",
+      "description": "';' is left-associative.",
+      "source": "begin x := 1; y := 2; z := 3 end",
+      "expect": {
+        "ast": "(Program (Seq (Seq (Assign x 1) (Assign y 2)) (Assign z 3)))"
+      }
+    },
+    {
+      "name": "else-takes-one-statement",
+      "description": "';' binds loosest: the else branch is one statement.",
+      "source": "begin if a > b then skip else x := 1; y := 2 end",
+      "expect": {
+        "ast": "(Program (Seq (If (> a b) (Skip) (Assign x 1)) (Assign y 2)))"
+      }
+    },
+    {
+      "name": "while-takes-one-statement",
+      "description": "';' binds loosest: the loop body is one statement.",
+      "source": "begin while a > b do x := 1; y := 2 end",
+      "expect": {
+        "ast": "(Program (Seq (While (> a b) (Assign x 1)) (Assign y 2)))"
+      }
+    },
+    {
+      "name": "block-groups-statements",
+      "description": "begin ... end makes one statement of many.",
+      "source": "begin while a > b do begin x := 1; y := 2 end end",
+      "expect": {
+        "ast": "(Program (While (> a b) (Block (Seq (Assign x 1) (Assign y 2)))))"
+      }
+    },
+    {
+      "name": "nested-blocks",
+      "description": "A block inside the program.",
+      "source": "begin begin skip end end",
+      "expect": {
+        "ast": "(Program (Block (Skip)))"
+      }
+    },
+    {
+      "name": "nested-if-else",
+      "description": "Every if has an else, so nesting is unambiguous.",
+      "source": "begin if a > b then if c > d then x := 1 else x := 2 else x := 3 end",
+      "expect": {
+        "ast": "(Program (If (> a b) (If (> c d) (Assign x 1) (Assign x 2)) (Assign x 3)))"
+      }
+    },
+    {
+      "name": "identifiers-with-digits-and-underscores",
+      "description": "Identifier syntax.",
+      "source": "begin F1 := K_2 end",
+      "expect": {
+        "ast": "(Program (Assign F1 K_2))"
+      }
+    },
+    {
+      "name": "keyword-prefixed-identifiers",
+      "description": "Identifiers may start with a keyword.",
+      "source": "begin iffy := ends; beginning := 1 end",
+      "expect": {
+        "ast": "(Program (Seq (Assign iffy ends) (Assign beginning 1)))"
+      }
+    },
+    {
+      "name": "whitespace-is-insignificant",
+      "description": "Spaces, tabs and line breaks.",
+      "source": "begin\n\tx :=\r\n 1\n end",
+      "expect": {
+        "ast": "(Program (Assign x 1))"
+      }
+    },
+    {
+      "name": "course-gcd",
+      "description": "Euclid's algorithm from the course.",
+      "source": "begin\n  while ¬M = N do\n    if M > N then M := M - N else N := N - M\nend",
+      "expect": {
+        "ast": "(Program (While (not (= M N)) (If (> M N) (Assign M (- M N)) (Assign N (- N M)))))"
+      }
+    },
+    {
+      "name": "course-power",
+      "description": "x to the power y from the course workbook.",
+      "source": "begin\n  R := 1;\n  while Y > 0 do\n  begin\n    R := R * X;\n    Y := Y - 1\n  end\nend",
+      "expect": {
+        "ast": "(Program (Seq (Assign R 1) (While (> Y 0) (Block (Seq (Assign R (* R X)) (Assign Y (- Y 1)))))))"
+      }
+    }
+  ]
+}

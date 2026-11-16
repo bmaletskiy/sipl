@@ -1,0 +1,100 @@
+{
+  "suite": "runtime_errors",
+  "description": "Programs that fail at run time.",
+  "cases": [
+    {
+      "name": "undefined-in-assignment",
+      "description": "Reading a variable that was never assigned.",
+      "source": "begin x := y end",
+      "expect": {
+        "error": {
+          "type": "UndefinedVariableError",
+          "line": 1,
+          "column": 12
+        }
+      }
+    },
+    {
+      "name": "undefined-in-update",
+      "description": "'x := x + 1' needs x.",
+      "source": "begin x := x + 1 end",
+      "expect": {
+        "error": {
+          "type": "UndefinedVariableError",
+          "line": 1,
+          "column": 12
+        }
+      }
+    },
+    {
+      "name": "undefined-in-while-condition",
+      "description": "Undefined variable in a loop condition.",
+      "source": "begin while u > 0 do skip end",
+      "expect": {
+        "error": {
+          "type": "UndefinedVariableError",
+          "line": 1,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "undefined-in-if-condition",
+      "description": "Undefined variable in an if condition.",
+      "source": "begin if u > 0 then skip else skip end",
+      "expect": {
+        "error": {
+          "type": "UndefinedVariableError",
+          "line": 1,
+          "column": 10
+        }
+      }
+    },
+    {
+      "name": "or-is-strict",
+      "description": "Both operands of '∨' are evaluated, as in the course semantics.",
+      "source": "begin if 1 = 1 ∨ u = 0 then skip else skip end",
+      "expect": {
+        "error": {
+          "type": "UndefinedVariableError",
+          "line": 1,
+          "column": 18
+        }
+      }
+    },
+    {
+      "name": "undefined-after-progress",
+      "description": "The error is reported at the failing variable.",
+      "source": "begin x := 1; y := z end",
+      "expect": {
+        "error": {
+          "type": "UndefinedVariableError",
+          "line": 1,
+          "column": 20
+        }
+      }
+    },
+    {
+      "name": "step-limit-skip-loop",
+      "description": "Infinite loop stopped by the step limit.",
+      "source": "begin while 1 = 1 do skip end",
+      "max_steps": 1000,
+      "expect": {
+        "error": {
+          "type": "StepLimitExceeded"
+        }
+      }
+    },
+    {
+      "name": "step-limit-assignment-loop",
+      "description": "Infinite loop with an assignment.",
+      "source": "begin x := 0; while x = 0 do x := 0 end",
+      "max_steps": 1000,
+      "expect": {
+        "error": {
+          "type": "StepLimitExceeded"
+        }
+      }
+    }
+  ]
+}

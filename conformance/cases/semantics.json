@@ -1,0 +1,387 @@
+{
+  "suite": "semantics",
+  "description": "Final states of programs that finish normally.",
+  "cases": [
+    {
+      "name": "assignment-creates-variable",
+      "description": "Assignment defines a new variable.",
+      "source": "begin x := 5 end",
+      "expect": {
+        "state": {
+          "x": 5
+        }
+      }
+    },
+    {
+      "name": "assignment-reads-old-value",
+      "description": "The right side is evaluated in the old state.",
+      "source": "begin x := x + 1 end",
+      "initial": {
+        "x": 1
+      },
+      "expect": {
+        "state": {
+          "x": 2
+        }
+      }
+    },
+    {
+      "name": "unrelated-variables-are-kept",
+      "description": "Other variables stay in the state.",
+      "source": "begin x := 1 end",
+      "initial": {
+        "y": 5
+      },
+      "expect": {
+        "state": {
+          "y": 5,
+          "x": 1
+        }
+      }
+    },
+    {
+      "name": "sequence-order",
+      "description": "Statements run left to right.",
+      "source": "begin x := 1; y := x + 1; x := y * 10 end",
+      "expect": {
+        "state": {
+          "x": 20,
+          "y": 2
+        }
+      }
+    },
+    {
+      "name": "arithmetic",
+      "description": "Priorities, associativity, negative literals, parentheses.",
+      "source": "begin x := 2 + 3 * 4; y := 10 - 3 - 2; z := -5 * -2; w := (2 + 3) * 4 end",
+      "expect": {
+        "state": {
+          "x": 14,
+          "y": 5,
+          "z": 10,
+          "w": 20
+        }
+      }
+    },
+    {
+      "name": "negative-results",
+      "description": "Integers may be negative.",
+      "source": "begin x := x - 10 end",
+      "initial": {
+        "x": 3
+      },
+      "expect": {
+        "state": {
+          "x": -7
+        }
+      }
+    },
+    {
+      "name": "condition-truth-table",
+      "description": "=, >, ¬, ∨ and parentheses.",
+      "source": "begin if 1 = 1 then a := 1 else a := 0; if 1 = 2 then b := 1 else b := 0; if 2 > 1 then c := 1 else c := 0; if 1 > 2 then d := 1 else d := 0; if ¬1 = 2 then e := 1 else e := 0; if 1 = 2 ∨ 2 > 1 then f := 1 else f := 0; if 1 = 2 ∨ 1 > 2 then g := 1 else g := 0; if ¬(1 = 2 ∨ 1 > 2) then h := 1 else h := 0 end",
+      "expect": {
+        "state": {
+          "a": 1,
+          "b": 0,
+          "c": 1,
+          "d": 0,
+          "e": 1,
+          "f": 1,
+          "g": 0,
+          "h": 1
+        }
+      }
+    },
+    {
+      "name": "greater-is-strict",
+      "description": "'>' is false for equal operands.",
+      "source": "begin if x > y then r := 1 else r := 0 end",
+      "initial": {
+        "x": 3,
+        "y": 3
+      },
+      "expect": {
+        "state": {
+          "x": 3,
+          "y": 3,
+          "r": 0
+        }
+      }
+    },
+    {
+      "name": "if-then-branch",
+      "description": "Only the chosen branch runs.",
+      "source": "begin if x > 0 then a := 1 else b := 1 end",
+      "initial": {
+        "x": 1
+      },
+      "expect": {
+        "state": {
+          "x": 1,
+          "a": 1
+        }
+      }
+    },
+    {
+      "name": "if-else-branch",
+      "description": "Only the chosen branch runs.",
+      "source": "begin if x > 0 then a := 1 else b := 1 end",
+      "initial": {
+        "x": 0
+      },
+      "expect": {
+        "state": {
+          "x": 0,
+          "b": 1
+        }
+      }
+    },
+    {
+      "name": "nested-if-outer-false",
+      "description": "Nested conditionals.",
+      "source": "begin if a > b then if c > d then x := 1 else x := 2 else x := 3 end",
+      "initial": {
+        "a": 1,
+        "b": 2,
+        "c": 0,
+        "d": 0
+      },
+      "expect": {
+        "state": {
+          "a": 1,
+          "b": 2,
+          "c": 0,
+          "d": 0,
+          "x": 3
+        }
+      }
+    },
+    {
+      "name": "nested-if-inner-false",
+      "description": "Nested conditionals.",
+      "source": "begin if a > b then if c > d then x := 1 else x := 2 else x := 3 end",
+      "initial": {
+        "a": 2,
+        "b": 1,
+        "c": 0,
+        "d": 1
+      },
+      "expect": {
+        "state": {
+          "a": 2,
+          "b": 1,
+          "c": 0,
+          "d": 1,
+          "x": 2
+        }
+      }
+    },
+    {
+      "name": "if-priority",
+      "description": "The else branch is one statement; 'b := 3' always runs.",
+      "source": "begin if x > 0 then a := 1 else a := 2; b := 3 end",
+      "initial": {
+        "x": 1
+      },
+      "expect": {
+        "state": {
+          "x": 1,
+          "a": 1,
+          "b": 3
+        }
+      }
+    },
+    {
+      "name": "while-zero-iterations",
+      "description": "A false condition skips the loop.",
+      "source": "begin while x > 0 do x := x - 1 end",
+      "initial": {
+        "x": 0
+      },
+      "expect": {
+        "state": {
+          "x": 0
+        }
+      }
+    },
+    {
+      "name": "while-countdown",
+      "description": "A loop with one statement.",
+      "source": "begin while x > 0 do x := x - 1 end",
+      "initial": {
+        "x": 3
+      },
+      "expect": {
+        "state": {
+          "x": 0
+        }
+      }
+    },
+    {
+      "name": "while-priority",
+      "description": "The loop body is one statement; 'y := y + 1' runs once, after the loop.",
+      "source": "begin while x > 0 do x := x - 1; y := y + 1 end",
+      "initial": {
+        "x": 2,
+        "y": 0
+      },
+      "expect": {
+        "state": {
+          "x": 0,
+          "y": 1
+        }
+      }
+    },
+    {
+      "name": "while-block-sum",
+      "description": "Sum of 1..N with a block body.",
+      "source": "begin S := 0; I := 1; while ¬I > N do begin S := S + I; I := I + 1 end end",
+      "initial": {
+        "N": 10
+      },
+      "expect": {
+        "state": {
+          "N": 10,
+          "S": 55,
+          "I": 11
+        }
+      }
+    },
+    {
+      "name": "blocks-and-skip",
+      "description": "Blocks and skip.",
+      "source": "begin begin skip end; begin x := 1; y := 2 end end",
+      "expect": {
+        "state": {
+          "x": 1,
+          "y": 2
+        }
+      }
+    },
+    {
+      "name": "course-gcd-8-16",
+      "description": "Example 1.4 of the course book.",
+      "source": "begin\n  while ¬M = N do\n    if M > N then M := M - N else N := N - M\nend",
+      "initial": {
+        "M": 8,
+        "N": 16
+      },
+      "expect": {
+        "state": {
+          "M": 8,
+          "N": 8
+        }
+      }
+    },
+    {
+      "name": "course-gcd-12-18",
+      "description": "Euclid's algorithm.",
+      "source": "begin\n  while ¬M = N do\n    if M > N then M := M - N else N := N - M\nend",
+      "initial": {
+        "M": 12,
+        "N": 18
+      },
+      "expect": {
+        "state": {
+          "M": 6,
+          "N": 6
+        }
+      }
+    },
+    {
+      "name": "course-gcd-7-13",
+      "description": "Coprime numbers.",
+      "source": "begin\n  while ¬M = N do\n    if M > N then M := M - N else N := N - M\nend",
+      "initial": {
+        "M": 7,
+        "N": 13
+      },
+      "expect": {
+        "state": {
+          "M": 1,
+          "N": 1
+        }
+      }
+    },
+    {
+      "name": "course-gcd-equal",
+      "description": "Equal numbers: no iterations.",
+      "source": "begin\n  while ¬M = N do\n    if M > N then M := M - N else N := N - M\nend",
+      "initial": {
+        "M": 5,
+        "N": 5
+      },
+      "expect": {
+        "state": {
+          "M": 5,
+          "N": 5
+        }
+      }
+    },
+    {
+      "name": "course-power-5-2",
+      "description": "Practical work 2 of the workbook.",
+      "source": "begin\n  R := 1;\n  while Y > 0 do\n  begin\n    R := R * X;\n    Y := Y - 1\n  end\nend",
+      "initial": {
+        "X": 5,
+        "Y": 2
+      },
+      "expect": {
+        "state": {
+          "X": 5,
+          "Y": 0,
+          "R": 25
+        }
+      }
+    },
+    {
+      "name": "course-power-2-10",
+      "description": "Power with a larger exponent.",
+      "source": "begin\n  R := 1;\n  while Y > 0 do\n  begin\n    R := R * X;\n    Y := Y - 1\n  end\nend",
+      "initial": {
+        "X": 2,
+        "Y": 10
+      },
+      "expect": {
+        "state": {
+          "X": 2,
+          "Y": 0,
+          "R": 1024
+        }
+      }
+    },
+    {
+      "name": "course-power-exponent-zero",
+      "description": "x to the power 0.",
+      "source": "begin\n  R := 1;\n  while Y > 0 do\n  begin\n    R := R * X;\n    Y := Y - 1\n  end\nend",
+      "initial": {
+        "X": 3,
+        "Y": 0
+      },
+      "expect": {
+        "state": {
+          "X": 3,
+          "Y": 0,
+          "R": 1
+        }
+      }
+    },
+    {
+      "name": "course-multiply-3-4",
+      "description": "Multiplication by repeated addition.",
+      "source": "begin\n  R := 0;\n  while X > 0 do\n  begin\n    R := R + Y;\n    X := X - 1\n  end\nend",
+      "initial": {
+        "X": 3,
+        "Y": 4
+      },
+      "expect": {
+        "state": {
+          "X": 0,
+          "Y": 4,
+          "R": 12
+        }
+      }
+    }
+  ]
+}
